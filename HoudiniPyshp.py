@@ -24,7 +24,7 @@ class houPloy:
                 line.addVertex(pt)                             
             for key in shape.__geo_interface__["properties"].keys():
                 line.setAttribValue(key,str(shape.__geo_interface__["properties"][key]))   
-    def createPoly(self):               
+    def createPoly(self): 
         for uatt in shapes[0].__geo_interface__["properties"]:     
             geo.addAttrib(hou.attribType.Prim, uatt, "")   
         geo.addAttrib(hou.attribType.Prim, "polyType", "")
@@ -39,3 +39,23 @@ class houPloy:
                 poly.addVertex(pt) 
             for key in shape.__geo_interface__["properties"].keys():
                 poly.setAttribValue(key,str(shape.__geo_interface__["properties"][key]))
+        return self
+        
+    def line(self,on_off):
+        if on_off == 1:
+            for shape in shapes:        
+                poly = geo.createPolygon()
+                poly.setIsClosed(0)
+                poly.setAttribValue("shpType",shape.__geo_interface__["type"])
+                poly.setAttribValue("polyType",shape.__geo_interface__["geometry"]["type"])
+                for coord in shape.__geo_interface__["geometry"]["coordinates"][0][0:-1]:
+                    pt = geo.createPoint()
+                    pt.setPosition((coord[0],0,coord[1]))
+                    poly.addVertex(pt) 
+                for key in shape.__geo_interface__["properties"].keys():
+                    poly.setAttribValue(key,str(shape.__geo_interface__["properties"][key]))
+                
+
+shape=shapefile.Reader("C:/Users/ycwb0484/Desktop/GIStest/test/buildings.shp")
+shapes=shape.shapeRecords()
+houPloy(shapes).createPoly().line(1)
