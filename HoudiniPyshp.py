@@ -56,7 +56,7 @@ class houPloy:
                 poly.setIsClosed(0)
                 poly.setAttribValue("shpType",shape.__geo_interface__["type"])
                 poly.setAttribValue("polyType",shape.__geo_interface__["geometry"]["type"])
-                for coord in shape.__geo_interface__["geometry"]["coordinates"][0][0:-1]:
+                for coord in shape.__geo_interface__["geometry"]["coordinates"][0]:
                     pt = geo.createPoint()
                     pt.setPosition((coord[0],0,coord[1]))
                     poly.addVertex(pt)
@@ -64,4 +64,4 @@ class houPloy:
                     poly.setAttribValue(key,str(shape.__geo_interface__["properties"][key]))
                     
 shapes1=shapefile.Reader("C:/Users/ycwb0484/Desktop/GIStest/test/buildings.shp").shapeRecords()
-houPloy(shapes1).createPoly().line(1)
+houPloy(shapes1).createPoly()
