@@ -1,0 +1,41 @@
+# 导入hou模块
+import hou
+
+# 获取当前节点
+node = hou.pwd()
+
+# 获取节点的几何体
+geo = node.geometry()
+
+# 获取所有的prims
+prims = geo.prims()
+
+# 创建一个字典，用来存储每个元素的顶点列表
+elements = {}
+
+# 遍历每个prims
+for prim in prims:
+    # 获取prims的MaxHandle属性，作为元素的编号
+    element_id = prim.attribValue("MaxHandle")
+    # 获取prims的顶点
+    vertices = prim.vertices()
+    # 如果元素编号在字典中不存在，就创建一个空列表
+    if element_id not in elements:
+        elements[element_id] = []
+    # 把顶点添加到对应元素编号的列表中
+    elements[element_id].extend(vertices)
+
+# 遍历每个元素
+for element_id, vertices in elements.items():
+    # 初始化中心点坐标
+    center = hou.Vector3(0, 0, 0)
+    # 遍历每个顶点
+    for vertex in vertices:
+        # 获取顶点的位置
+        position = vertex.point().position()
+        # 累加位置到中心点坐标
+        center += position
+    # 计算中心点坐标的平均值
+    center /= len(vertices)
+    # 打印元素编号和中心点坐标
+    print(element_id, center)
