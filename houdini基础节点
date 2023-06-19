@@ -1,0 +1,165 @@
+（一）Node节点
+node = hou.pwd() 当前节点
+geo = node.geometry()
+node.parent() 节点的父级节点
+node.children() 子节点
+node.inputs() 节点的输入节点元组
+node.outputs() 节点的输出节点元组
+SopNode.setHardLocked(True) 冻结Sop数据
+（二）Node.Parm节点通道属性
+p0 = node.parm('p0') 不存在时为None
+p1 = node.parm('p1').eval() 获取节点属性值
+node.parm('p2').set(2) 设置节点属性值
+node.parms() 获取所有属性
+node.setParms({"tx": 1, "sy": 3})基于dict字典的赋值方法
+Button按钮
+btn = node.parm('Save')
+btn.pressButton()
+ParmTemplate
+# 构造参数
+test_float = hou.FloatParmTemplate("test","test",1)
+# 代码添加、删除参数
+node.addSpareParmTuple(test_float) 
+node.removeSpareParmTuple(node.parm("test"))
+Ramp参数
+ramp = node.evalParmTuple("ramp")[0]
+value = ramp.lookup(position)
+
+# 添加ramp参数
+ramp_temp = hou.RampParmTemplate("test","test",hou.rampParmType.Color,default_value=2)
+# 返回Parm对象而不是ParmTuple
+ramp_parm = node.addSpareParmTuple(ramp_temp)
+lin = hou.rampBasis.Linear
+ramp_data = hou.Ramp((lin, lin), (0, 1), ((0.0, 0.0, 0.0), (1.0, 0.0, 0.2)))
+ramp_parm.set(ramp_data)
+复制节点参数
+测试复制一个box的参数模板、参数值（还不能复制表达式，参数没有hide、disable）
+
+box = node.inputs()[0]
+parms = box.parmTuples()
+for p in parms:
+    tp = p.parmTemplate()
+    if not node.parmTuple(tp.name()):
+        clone = tp.clone()
+        node.addSpareParmTuple(clone)
+    node.parmTuple(tp.name()).set(p.eval())
+（三）几何数据
+Geometry
+geo = node.geometry()
+geo.points() 获取Point数据集合
+geo.prims() 获取Prim数据集合
+geo.data() 几何字节码
+bgeo_data = geo.data() open("/tmp/torus.bgeo", "wb").write(bgeo_data)
+geo.clear() 清除几何数据
+geo.transform(matrix)
+geo.pointGroups() 所有的点组PointGroup
+geo.findPointGroup(groupName) 获取点组
+Point
+number() 点id
+position() 坐标
+vertices() 相关的顶点
+prims() 相关的面
+weight() 权重值
+PointGroup
+name()
+points() 组内的点集
+创建点、线、面
+geo.createPoint()
+geo.createPolygon(is_closed=False) 参数is_closed控制是曲线还是多边形
+addVertex() 往Prim里面添加已经存在的Point
+# 创建Point
+start = geo.createPoint()
+start.setPosition(hou.Vector3(0,0,0))
+
+pt = geo.createPoint()
+pt.setPosition(hou.Vector3(0,1,0))
+# 创建Prim，添加Vertex
+line = geo.createPolygon(is_closed=False)
+line.addVertex(start)
+line.addVertex(pt)
+（四）几何属性
+node = hou.pwd()
+geo = node.geometry()
+​
+points = geo.points()
+prims = geo.prims()
+​
+for i in points:
+    print i.attribValue("Cd")
+    i.setAttribValue("pscale",0.5)
+    
+for i in prims:
+    print i.attribValue("name")
+    i.setAttribValue("name","mask")
+​
+#detail/global属性
+res = geo.attribValue("res")
+一般VEX会自动创建属性类，Python不会自动创建没有的属性类
+自定义的属性需要先addAttrib()，不然会报错的
+thick_attrib = geo.addAttrib(hou.attribType.Point, "thick", 1.0) 
+geo.setAttribValue(thick_attrib, 2.2)
+添加数组属性addArrayAttrib()
+
+geo.addArrayAttrib(hou.attribType.Global, "data", hou.attribData.Float, tuple_size=3)
+# 步长为3，最终结果为[(1.0, 2.0, 3.0), (4.0, 5.0, 6.0)]
+geo.setGlobalAttribValue("data", [1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+（五）HDA Python
+Python Module
+node.hdaModule()或者node.hm()访问
+
+hou.pwd().hdaModule().test()
+kwargs['node'].hdaModule().test()
+kwargs['node'].hm().test()
+自定义模块
+#需要在PythonModule中导入
+import toolutils
+mod = toolutils.createModuleFromSection("tt", kwargs["type"], "terrain")
+​
+#调用时
+kwargs['node'].hdaModule().mod.test()
+Menu Script
+返回值，数量为偶数个字符串的列表，直接的逗号分割即可
+
+return (1,2,3,4)
+[1,"ww",2,"www"]
+1,2,3,4
+"1","2","3","4"
+（六）Houdini安装Python Package
+# 打开Houdini->Windows->Shell，先下载get-pip.py
+curl https://bootstrap.pypa.io/get-pip.py -o D:/get-pip.py
+# 安装pip
+hython D:/get-pip.py
+# 安装pip成功后，与python安装package一样的语法
+hython -m pip install gifmaker
+参考视频：https://www.youtube.com/watch?v=cIEN50WuPoc
+
+（七）其他
+获取图片分辨率
+hou.imageResolution(path)
+
+（X）Python基础
+exec(str)
+将字符当做代码运行
+
+内置类型
+tuple元组
+
+t = (1,2,3,4)
+t = 1,2,3,4
+t = (10,)
+t[0] = 100 赋值非法，不能修改
+list列表
+
+l = [1,2,3,4]
+l[1] = 100
+set集合
+
+s = {1,2,3,4,2} 不重复的集合
+dict字典
+
+dict = {key1:value1,key2:value2}
+key是唯一的不重复的，value无所谓
+value = dict[key] 通过key来查询value
+string字符串
+
+s = str(3.14) 转换成字符串
